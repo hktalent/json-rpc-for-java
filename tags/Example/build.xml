@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 把工程打包为ear,publish，包含test,demo,myweb, 同时生成pub发布目录 -->
+<project basedir="." default="ear">
+	<!-- 设定需要用户的属性文件 -->
+	<property file="build.properties" />
+	<!-- 要打包的名字，统一在这里填写  -->
+	<property name="earName" value="jsonrpc1" />
+
+	<!-- 设定编译文件目标 -->
+	<property name="build" value="build" />
+	<property name="dest" value="${build}/classes.ant" />
+	<property name="WebLogic.8.x.Client.home" value="${wl.home}/server/lib" />
+	<!-- 设定源代码文件路径 -->
+	<property name="src" value="javacode" />
+	<property name="src.jsonrpc" value="javacode/json-rpc" />
+	<property name="src.mytest" value="javacode/mytest" />
+
+	<!-- 设定web应用路径 -->
+	<property name="webapp" value="webapp" />
+	<!-- 设定lib所在的路径 -->
+	<property name="lib" value="lib" />
+	<!-- 设定war包文件名 -->
+	<property name="web.name" value="${earName}.war" />
+	<!-- 设定不编译jsp成class的打包 -->
+	<property name="nobuildweb.name" value="${earName}.war" />
+
+	<!-- 设定工程依赖的jar包 -->
+	<path id="project.class.path">
+		<pathelement location="${jdk.home}/jre/lib/rt.jar" />
+		<pathelement location="${jdk.home}/lib/tools.jar" />
+		<pathelement location="${WebLogic.8.x.Client.home}/weblogic.jar" />
+		<pathelement location="${dest}" />
+		<fileset file="${lib}/*.jar" />
+	</path>
+
+	<!-- 初始化任务 如果要checkout就加： depends="checkoutLatest" -->
+	<target name="init" >
+		<echo message="开始执行: init" />
+		<echo message="删除文件夹：${dest}" />
+		<delete dir="${dest}" />
+		<delete file="./build/${earName}.ear" />
+		<delete dir="./earbin/" />
+		<echo message="创建文件夹：${dest}" />
+		<mkdir dir="${dest}" />
+		<echo message="创建文件夹：${dest}" />
+	</target>
+
+	<!-- 编译java源代码 -->
+	<target name="javacompilejava" depends="init">
+		<!-- 编译java源文件到目标中 -->
+		<echo message="执行javacompilejava，依赖init，......" />
+		<echo message="编译java源文件app到目标路径：${dest}" />
+		<javac bootclasspathref="project.class.path" debug="true" deprecation="false" destdir="${dest}" encoding="UTF-8" nowarn="false" fork="true" target="1.4">
+			<src path="${src.jsonrpc}" />
+			<src path="${src.mytest}" />
+		</javac>
+
+	</target>
+	<target name="javacompile" depends="javacompilejava">
+		<echo message="执行cmpJar，依赖javacompile，编译jar......" />
+		<copy todir="${dest}">
+			<fileset dir="${src.jsonrpc}">
+				<include name="**/*.*" />
+				<include name="**/*" />
+				<exclude name="*.svn/" />
+				<exclude name="**/*.java" />
+				<exclude name="**/*.bak" />
+			</fileset>
+			<fileset dir="${src.mytest}">
+				<include name="**/*.*" />
+				<include name="**/*" />
+				<exclude name="*.svn/" />
+				<exclude name="**/*.java" />
+				<exclude name="**/*.bak" />
+			</fileset>
+		</copy>
+	</target>
+
+	<!-- 清除jsp文件编译生成的class -->
+	<target name="ClearJspClass" depends="init">
+		<echo message="执行ClearJspClass，依赖init,清除jsp文件编译生成的class......" />
+		<delete dir="${dest}/jsp_servlet" />
+		<mkdir dir="${dest}/jsp_servlet" />
+	</target>
+
+	<target name="buildjsp" depends="ClearJspClass">
+		<echo message="执行buildjsp，依赖ClearJspClass." />
+		<echo message="通过weblogic编译jsp文件......" />
+		<java classname="weblogic.jspc" fork="true">
+			<arg value="-k" />
+			<arg value="-g" />
+			<arg value="-compileAll" />
+			<arg value="-d" />
+			<arg value="${dest}" />
+			<arg value="-webapp" />
+			<arg value="${webapp}" />
+			<classpath refid="project.class.path" />
+		</java>
+	</target>
+	<target name="bujsp">
+		<echo message="执行bujsp, 通过weblogic编译jsp文件......" />
+		<java classname="weblogic.jspc" fork="true">
+			<arg value="-k" />
+			<arg value="-g" />
+			<arg value="-d" />
+			<arg value="${dest}" />
+			<arg value="-webapp" />
+			<arg value="${webapp}" />
+			<arg value="-keepgenerated" />
+			<arg value="${webapp}/index.jsp" />
+			<classpath refid="project.class.path" />
+		</java>
+	</target>
+	<!-- 打包 war -->
+	<target name="BuildWar" depends="javacompile,buildjsp">
+		<echo message="执行BuildWar,依赖javacompile,buildjsp，编译war文件......" />
+		<war compress="true" destfile="build/${nobuildweb.name}" webxml="${webapp}/WEB-INF/web.xml">
+			<fileset dir="${webapp}">
+				<include name="**/*.*" />
+				<include name="**/*" />
+				<exclude name="WEB-INF/classes/**/*.*" />
+				<exclude name="**/*.bak" />
+			</fileset>
+			<classes dir="${dest}">
+				<include name="**/*.*" />
+				<include name="**/*" />
+			</classes>
+			<lib dir="lib/" />
+		</war>
+	</target>
+
+	<!-- 打包排除jsp文件 -->
+	<target name="BuildWarNoJsp" depends="javacompile">
+		<echo message="执行BuildWarNoJsp,依赖javacompile，编译war文件......" />
+		<war compress="true" destfile="build/${web.name}" webxml="${webapp}/WEB-INF/web.xml">
+			<fileset dir="${webapp}">
+				<include name="**/*.*" />
+				<include name="**/*" />
+				<exclude name="WEB-INF/classes/**/*.*" />
+				<exclude name="**/*.bak" />
+			</fileset>
+		</war>
+	</target>
+
+
+	<!-- 打包ear包 -->
+	<target name="ear" depends="BuildWarNoJsp" description="Create ear file">
+		<echo message="执行ear,依赖BuildWarNoJsp，编译ear文件......" />
+		<mkdir dir="./earbin/" />
+		<mkdir dir="./earbin/META-INF" />
+		<mkdir dir="./earbin/APP-INF/lib/" />
+		<mkdir dir="./earbin/APP-INF/classes/" />
+		<move file="build/${web.name}" todir="./earbin" />
+		<copy file="${webapp}/META-INF/application.xml" todir="./earbin/META-INF" />
+		<copy file="${webapp}/META-INF/MANIFEST.MF" todir="./earbin/META-INF" />
+		<copy todir="./earbin/APP-INF/lib/">
+			<fileset dir="${lib}">
+				<include name="**/*.*" />
+				<include name="**/*" />
+			</fileset>
+		</copy>
+		<copy todir="./earbin/APP-INF/classes/">
+			<fileset dir="${dest}">
+				<include name="**/*.*" />
+				<include name="**/*" />
+			</fileset>
+		</copy>
+		<jar destfile="build/${earName}.ear">
+			<fileset dir="./earbin" />
+		</jar>
+		<echo message="打包完毕，清理中间文件夹：${dest}" />
+		<delete dir="./classes.ant/**/*.*"  />
+		<delete dir="./classes.ant"  />
+		<delete dir="./earbin/" />
+	</target>
+
+</project>

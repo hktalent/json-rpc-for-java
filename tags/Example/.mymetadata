@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-module
+  type="WEB"
+  name="MyJson-Rpc"
+  id="myeclipse.1273898634218"
+  context-root="/jsonrpc"
+  j2ee-spec="1.4"
+  archive="MyJson-Rpc.war">
+  <attributes>
+    <attribute name="webrootdir" value="/webapp" />
+  </attributes>
+</project-module>
+

@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE weblogic-web-app PUBLIC "-//BEA Systems, Inc.//DTD Web Application 8.1//EN" "http://www.bea.com/servers/wls810/dtd/weblogic810-web-jar.dtd">
+<weblogic-web-app>
+	<jsp-descriptor>
+		<jsp-param>
+			<param-name>precompile</param-name>
+			<param-value>false</param-value>
+		</jsp-param>
+		<jsp-param>
+			<param-name>pageCheckSeconds</param-name>
+			<param-value>-1</param-value>
+		</jsp-param>
+		<jsp-param>
+			<param-name>compileCommand</param-name>
+			<param-value>javac</param-value>
+		</jsp-param>
+		<jsp-param>
+			<param-name>compilerSupportsEncoding</param-name>
+			<param-value>true</param-value>
+		</jsp-param>
+		<jsp-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</jsp-param>
+		<jsp-param>
+			<param-name>keepgenerated</param-name>
+			<param-value>false</param-value>
+		</jsp-param>
+		<jsp-param>
+			<param-name>debug</param-name>
+			<param-value>false</param-value>
+		</jsp-param>
+	</jsp-descriptor>
+	<charset-params>
+		<input-charset>
+			<resource-path>/*</resource-path>
+			<java-charset-name>UTF-8</java-charset-name>
+		</input-charset>
+	</charset-params>
+	<!-- win32 weblogic
+		<virtual-directory-mapping>
+		<local-path>
+		C:/bea/user_projects/domains/domain1/annalfiles/
+		</local-path>
+		<url-pattern>/*</url-pattern>
+		</virtual-directory-mapping>
+	-->
+	<context-root>/jsonrpc1</context-root>
+</weblogic-web-app>

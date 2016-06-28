@@ -1,0 +1,3 @@
+Manifest-Version: 3.8.0
+Ant-Version: Apache Ant 1.7.0
+Created-By: 1.4.2_13-b06 (Summer QQ: 11602011.)

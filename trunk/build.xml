@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 把工程打包为JSON-RPC.jar -->
+<project basedir="." default="cmpJar">
+	<!-- 设定需要用户的属性文件 -->
+	<property file="build.properties" />
+
+	<!-- 设定编译文件目标 -->
+	<property name="build" value="build" />
+
+	<property name="jaraName" value="JSON-RPC.jar" />
+	
+	<property name="WebLogic.8.x.Client.home" value="${wl.home}/server/lib" />
+	
+	<!-- 设定源代码文件路径 -->
+	<property name="src.json-rpc" value="." />
+
+	<!-- 设定lib所在的路径 -->
+	<property name="lib" value="../../lib" />
+
+	<!-- 设定工程依赖的jar包 -->
+	<path id="project.class.path">
+		<pathelement location="${jdk.home}/jre/lib/rt.jar" />
+		<pathelement location="${jdk.home}/lib/tools.jar" />
+		<pathelement location="${WebLogic.8.x.Client.home}/weblogic.jar" />
+		<fileset file="${lib}/*.jar" />
+	</path>
+	
+	<!-- 初始化任务 如果要checkout就加： depends="checkoutLatest" -->
+	<target name="init" >
+		<echo message="开始执行: init" />
+		<echo message="删除文件夹：${build}" />
+		<delete dir="${build}" />
+		<echo message="创建文件夹：${build}" />
+		<mkdir dir="${build}" />
+	</target>
+	
+	<target name="cmpJar"  depends="init">
+		<javac bootclasspathref="project.class.path" debug="true" source="1.4" deprecation="false" destdir="${build}" encoding="UTF-8" nowarn="false" fork="true" target="1.4">
+			<src path="${src.json-rpc}" />
+			<classpath refid="project.class.path" />
+		</javac>
+	    <copy todir="${build}">
+			<fileset dir="${src.json-rpc}">
+				<include name="**/*class" />
+				<include name="**/Base.js" />
+				<exclude name="${build}/**" />
+				<exclude name="*.svn/" />
+				<exclude name="**/*.java" />
+				<exclude name="**/*.bak" />
+			</fileset>
+		</copy>
+		<jar jarfile="${jaraName}" basedir="${build}"  update="yes" manifest="Meta-inf/MANIFEST.MF"/>
+		<delete dir="${build}" />
+	</target>
+</project>
